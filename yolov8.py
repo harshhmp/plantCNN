@@ -12,7 +12,13 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 
 def main():
-    trainCNNModel()
+    model = loadModel("model1-2.keras")
+    img_path = "plantData/Image Data base/Image Data base/cabbage looper/cabbage_looper224.jpg"
+    class_names = getClassNames()
+    
+    predictImage(model, img_path, class_names)
+    
+    
     
 def runYolo(): 
     image = load_image_bgr("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.rd.com%2Fwp-content%2Fuploads%2F2022%2F11%2FRD-flowering-house-plants-GettyImages-1361899895-JVedit.jpg%3Fresize%3D2048&f=1&nofb=1&ipt=b1918ccc89b105609bd6372da3551bc2553abe17e7c1f60f50dc599e52cb7709")
@@ -71,6 +77,39 @@ def trainCNNModel():
     model.fit(x_train, validation_data=x_test, epochs=5)
     
     model.save("model1")
+    
+def getClassNames():
+    x_train = tf.keras.utils.image_dataset_from_directory(
+        "plantData/Image Data base/Image Data base",
+        validation_split = 0.2, 
+        subset="training",
+        seed=123,
+        image_size=(128, 128),
+        batch_size=64
+    )
+    
+    return x_train.class_names
+    
+def predictImage(model, img_path, class_names):
+    img = tf.keras.utils.load_img(img_path, target_size=(128, 128))
+    
+    img_array = tf.keras.utils.img_to_array(img)
+    
+    img_array = np.expand_dims(img_array, axis=0)
+    
+    pred = model.predict(img_array)
+    
+    pred_class = class_names[np.argmax(pred)]
+    confidence = np.max(pred)
+
+    print(f"Prediction: {pred_class} (confidence: {confidence:.2f})")   
+    
+
+def loadModel(model_path):
+    model = tf.keras.models.load_model(model_path)
+    
+    print("Model Loaded")
+    return model
 
 if __name__ == "__main__":
     main()
