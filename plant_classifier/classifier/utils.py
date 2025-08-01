@@ -27,6 +27,7 @@ def runEfficientNet(image_array):
     return decode_predictions(predictions, top=1)[0]
     
 def runCustomModel(image_array):
+    # Predict image and translate result into words
     prediction = modelCustom.predict(image_array)
     confidence = float(prediction.max()) * 100
     
@@ -34,5 +35,5 @@ def runCustomModel(image_array):
     
     CLASS_NAMES = getModel1ClassNames()
     result = CLASS_NAMES[class_index]
-    
+
     return confidence, result

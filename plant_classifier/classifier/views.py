@@ -17,11 +17,13 @@ import os
 
 # Create your views here.
 
+# Load models to use in classifcation (move to utils.py later)
 model1 = tf.keras.models.load_model("../model1-2.keras")
 model2 = tf.keras.models.load_model("../model1-3.keras")
 
 @login_required
 def classify_image(request):
+    # Initialize variables to send for rendering
     result = None
     confidence = None
     image_url = None
@@ -35,12 +37,14 @@ def classify_image(request):
             
             model_to_run = request.POST.get('mode', 'default')
             
+            # Prepare image for classification
             image = Image.open(uploaded_file).resize((128, 128))
             
             img_array = tf.keras.utils.img_to_array(image)
             img_array = np.expand_dims(img_array, axis=0)
             
             if model_to_run == 'model1':
+                # Run Model 1, and translate result into words
                 prediction = model1.predict(img_array)
                 confidence = float(prediction.max()) * 100
                 
@@ -51,6 +55,7 @@ def classify_image(request):
                 print("ran model1")
                 
             elif model_to_run == 'model2':
+                # Run Model 2, and translate result into words
                 prediction = model2.predict(img_array)
                 confidence = float(prediction.max()) * 100
                 
@@ -61,6 +66,7 @@ def classify_image(request):
                 print("ran model2")
             
             elif model_to_run == 'model3':
+                # Run Model 3, and translate result into words
                 image2 = Image.open(uploaded_file).resize((224, 224))
             
                 img_array2 = tf.keras.utils.img_to_array(image2)
@@ -71,6 +77,7 @@ def classify_image(request):
                 confidence = float(decoded[0][2]) * 100
             
             elif model_to_run == 'model4':
+                # Run Model 4, and translate result into words
                 image2 = Image.open(uploaded_file).resize((224, 224))
             
                 img_array2 = tf.keras.utils.img_to_array(image2)
@@ -80,6 +87,7 @@ def classify_image(request):
                 
                 print("ran model4")
 
+            # Create user history object to store image and result
             image = form.cleaned_data['image']
             record = UserClassifications.objects.create(
                 user=request.user,
@@ -114,15 +122,18 @@ def signup_view(request):
 
 @login_required
 def history_view(request):
+    # Find user's history sorted by date created
     records = UserClassifications.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'history.html', {'records': records})
 
 @login_required
 def delete_record(request, record_id):
+    # Find object requested to delete and the image's path
     record = get_object_or_404(UserClassifications, id=record_id, user=request.user)
     full_path = os.path.join(settings.BASE_DIR , record.image.path)
     
     if request.method == 'POST':
+        # Delete history record and return to history page
         default_storage.delete(full_path)
         record.delete()
         return redirect('history')
