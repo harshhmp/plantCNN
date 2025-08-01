@@ -1,2 +1,13 @@
 output
 plantData
+
+plant_classifier/media/
+plant_classifier/static/
+*.sqlite3
+*.log
+
+.ipynb_checkpoints/
+
+.env
+venv/
+.env.*

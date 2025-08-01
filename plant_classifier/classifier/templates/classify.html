@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Plant Classifier</title>
+
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+</head>
+
+<body class="bg-light">
+  <div class="container mt-5">
+    
+    <div class="row">
+      <div class="col-8"><h1 class="mb-4">Plant Disease Classifier</h1></div>
+
+      <div class="col-4">
+        {% if user.is_authenticated %}
+          <p>Welcome, {{ user.username }}! 
+            <form method="post" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-secondary">Logout</button>
+            </form>
+          </p>
+        {% else %}
+          <p><a href="{% url 'login' %}">Login</a> or <a href="{% url 'signup' %}">Sign Up</a></p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col container text-primary-emphasis bg-primary-subtle border border-primary-subtle rounded-3 text-center">
+        <br>
+        <form method="post" enctype="multipart/form-data" class="mb-4">
+          {% csrf_token %}
+          <div class="mb-3 text-center">
+            {{ form.image.label_tag }}
+            {{ form.image }}
+          </div>
+          <div class="mb-3">
+            <label for="modeSelect" class="mb-2">Select Model:</label>
+            <div class="d-flex justify-content-center">
+            <select name="mode" class="form-select w-25 mb-3" id="modeSelect">
+              <option value="model1">Defualt Model</option>
+              <option value="model2">Model Plus</option>
+              <option value="model3">General Classification Model</option>
+              <option value="model4">Custom Model Plus</option>
+            </select>
+            </div>
+          </div>
+          <div class="mb-3 text-center"><button type="submit" class="btn btn-primary center">Classify</button></div>
+        </form>
+      </div>
+    </div>
+    <br>
+    {% if result %}
+      <div class="card shadow" style="max-width: 500px;">
+        <div class="card-header bg-success text-white">
+          Classification Result
+        </div>
+        <div class="card-body">
+          <p><strong>Prediction:</strong> {{ result }}</p>
+          <p><strong>Confidence:</strong> {{ confidence|floatformat:2 }}%</p>
+          {% if image_url %}
+          <img src="{{ image_url }}" alt="Uploaded Image" class="img-fluid rounded mt-3">
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+    <br>
+    <a href="{% url 'about' %}" class="btn btn-info">About</a>
+    <a href="{% url 'history' %}" class="btn btn-secondary">User History</a>
+
+  </div>
+
+  <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+
+</html>
