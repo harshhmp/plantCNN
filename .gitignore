@@ -11,3 +11,5 @@ plant_classifier/static/
 .env
 venv/
 .env.*
+
+*:Zone.Identifier
