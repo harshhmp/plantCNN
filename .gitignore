@@ -3,6 +3,9 @@ plantData
 
 plant_classifier/media/
 plant_classifier/static/
+
+plant_classifier/classifier/__pycache__/
+
 *.sqlite3
 *.log
 

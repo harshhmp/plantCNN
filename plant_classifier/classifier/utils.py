@@ -3,8 +3,18 @@ import numpy as np
 from tensorflow.keras.applications import EfficientNetB0
 from tensorflow.keras.applications.efficientnet import preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing import image
+from PIL import Image
 
+# Model 1
+model1 = tf.keras.models.load_model("../model1-2.keras")
+
+# Model 2
+model2 = tf.keras.models.load_model("../model1-3.keras")
+
+# Model 3
 modelB0 = EfficientNetB0(weights='imagenet')
+
+# Model 4
 modelCustom = tf.keras.models.load_model("../efficientnet_custom_model_1.keras")
 
 def getModel1ClassNames():
@@ -19,14 +29,18 @@ def getModel2ClassNames():
 
     return class_names
 
-def runEfficientNet(image_array):
+def runEfficientNet(uploaded_file):
+    image_array = convertFileToArray(uploaded_file, size=(224, 224))
+    
     image_array = preprocess_input(image_array)
     
     predictions = modelB0.predict(image_array)
 
     return decode_predictions(predictions, top=1)[0]
     
-def runCustomModel(image_array):
+def runCustomModel(uploaded_file):
+    image_array = convertFileToArray(uploaded_file, size=(224, 224))
+    
     # Predict image and translate result into words
     prediction = modelCustom.predict(image_array)
     confidence = float(prediction.max()) * 100
@@ -37,3 +51,40 @@ def runCustomModel(image_array):
     result = CLASS_NAMES[class_index]
 
     return confidence, result
+
+def runModel1(uploaded_file):
+    image_array = convertFileToArray(uploaded_file, size=(128, 128))
+
+    # Predict image and translate result into words
+    prediction = model1.predict(image_array)
+    confidence = float(prediction.max()) * 100
+    
+    class_index = prediction.argmax()
+    
+    CLASS_NAMES = getModel1ClassNames()
+    result = CLASS_NAMES[class_index]
+    
+    return confidence, result
+
+def runModel2(uploaded_file):
+    image_array = convertFileToArray(uploaded_file, size=(128, 128))
+    
+    # Predict image and translate result into words
+    prediction = model2.predict(image_array)
+    confidence = float(prediction.max()) * 100
+    
+    class_index = prediction.argmax()
+    
+    CLASS_NAMES = getModel2ClassNames()
+    result = CLASS_NAMES[class_index]
+    
+    return confidence, result
+
+def convertFileToArray(uploaded_file, size):
+    # Prepare image for classification
+    image = Image.open(uploaded_file).resize(size)
+    
+    img_array = tf.keras.utils.img_to_array(image)
+    img_array = np.expand_dims(img_array, axis=0)
+    
+    return img_array

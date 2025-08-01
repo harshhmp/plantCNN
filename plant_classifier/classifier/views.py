@@ -6,7 +6,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 
 from .forms import UploadImageForm
-from .utils import getModel1ClassNames, getModel2ClassNames, runEfficientNet, runCustomModel
+from .utils import runEfficientNet, runCustomModel, runModel1, runModel2
 from .models import UserClassifications
 
 from PIL import Image
@@ -16,10 +16,6 @@ import tensorflow as tf
 import os
 
 # Create your views here.
-
-# Load models to use in classifcation (move to utils.py later)
-model1 = tf.keras.models.load_model("../model1-2.keras")
-model2 = tf.keras.models.load_model("../model1-3.keras")
 
 @login_required
 def classify_image(request):
@@ -37,54 +33,26 @@ def classify_image(request):
             
             model_to_run = request.POST.get('mode', 'default')
             
-            # Prepare image for classification
-            image = Image.open(uploaded_file).resize((128, 128))
-            
-            img_array = tf.keras.utils.img_to_array(image)
-            img_array = np.expand_dims(img_array, axis=0)
-            
             if model_to_run == 'model1':
                 # Run Model 1, and translate result into words
-                prediction = model1.predict(img_array)
-                confidence = float(prediction.max()) * 100
-                
-                class_index = prediction.argmax()
-                
-                CLASS_NAMES = getModel1ClassNames()
-                result = CLASS_NAMES[class_index]
+                confidence, result = runModel1(uploaded_file)
                 print("ran model1")
                 
             elif model_to_run == 'model2':
                 # Run Model 2, and translate result into words
-                prediction = model2.predict(img_array)
-                confidence = float(prediction.max()) * 100
-                
-                class_index = prediction.argmax()
-                
-                CLASS_NAMES = getModel2ClassNames()
-                result = CLASS_NAMES[class_index]
+                confidence, result = runModel2(uploaded_file)
                 print("ran model2")
             
             elif model_to_run == 'model3':
                 # Run Model 3, and translate result into words
-                image2 = Image.open(uploaded_file).resize((224, 224))
-            
-                img_array2 = tf.keras.utils.img_to_array(image2)
-                img_array2 = np.expand_dims(img_array2, axis=0)
-            
-                decoded = runEfficientNet(img_array2)
+                decoded = runEfficientNet(uploaded_file)
                 result = decoded[0][1]
                 confidence = float(decoded[0][2]) * 100
+                print("ran efficient Model")
             
             elif model_to_run == 'model4':
                 # Run Model 4, and translate result into words
-                image2 = Image.open(uploaded_file).resize((224, 224))
-            
-                img_array2 = tf.keras.utils.img_to_array(image2)
-                img_array2 = np.expand_dims(img_array2, axis=0)
-                
-                confidence, result = runCustomModel(img_array2)
-                
+                confidence, result = runCustomModel(uploaded_file)
                 print("ran model4")
 
             # Create user history object to store image and result
