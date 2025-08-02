@@ -17,6 +17,9 @@ modelB0 = EfficientNetB0(weights='imagenet')
 # Model 4
 modelCustom = tf.keras.models.load_model("../efficientnet_custom_model_1.keras")
 
+# Model 5
+modelCustom1 = tf.keras.models.load_model("../models/efficientnet_custom_model.keras")
+
 def getModel1ClassNames():
     
     class_names = ['Apple Apple scab', 'Apple Black rot', 'Apple Cedar apple rust', 'Apple healthy', 'Bacterial leaf blight in rice leaf', 'Blight in corn Leaf', 'Blueberry healthy', 'Brown spot in rice leaf', 'Cercospora leaf spot', 'Cherry (including sour) Powdery mildew', 'Cherry (including_sour) healthy', 'Common Rust in corn Leaf', 'Corn (maize) healthy', 'Garlic', 'Grape Black rot', 'Grape Esca Black Measles', 'Grape Leaf blight Isariopsis Leaf Spot', 'Grape healthy', 'Gray Leaf Spot in corn Leaf', 'Leaf smut in rice leaf', 'Nitrogen deficiency in plant', 'Orange Haunglongbing Citrus greening', 'Peach healthy', 'Pepper bell Bacterial spot', 'Pepper bell healthy', 'Potato Early blight', 'Potato Late blight', 'Potato healthy', 'Raspberry healthy', 'Sogatella rice', 'Soybean healthy', 'Strawberry Leaf scorch', 'Strawberry healthy', 'Tomato Bacterial spot', 'Tomato Early blight', 'Tomato Late blight', 'Tomato Leaf Mold', 'Tomato Septoria leaf spot', 'Tomato Spider mites Two spotted spider mite', 'Tomato Target Spot', 'Tomato Tomato mosaic virus', 'Tomato healthy', 'Waterlogging in plant', 'algal leaf in tea', 'anthracnose in tea', 'bird eye spot in tea', 'brown blight in tea', 'cabbage looper', 'corn crop', 'ginger', 'healthy tea leaf', 'lemon canker', 'onion', 'potassium deficiency in plant', 'potato crop', 'potato hollow heart', 'red leaf spot in tea', 'tomato canker']
@@ -78,6 +81,20 @@ def runModel2(uploaded_file):
     CLASS_NAMES = getModel2ClassNames()
     result = CLASS_NAMES[class_index]
     
+    return confidence, result
+
+def runCustomModel1(uploaded_file):
+    image_array = convertFileToArray(uploaded_file, size=(224, 224))
+    
+    # Predict image and translate result into words
+    prediction = modelCustom.predict(image_array)
+    confidence = float(prediction.max()) * 100
+    
+    class_index = prediction.argmax()
+    
+    CLASS_NAMES = getModel1ClassNames()
+    result = CLASS_NAMES[class_index]
+
     return confidence, result
 
 def convertFileToArray(uploaded_file, size):

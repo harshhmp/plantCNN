@@ -16,3 +16,5 @@ venv/
 .env.*
 
 *:Zone.Identifier
+*.pot
+*.pyc

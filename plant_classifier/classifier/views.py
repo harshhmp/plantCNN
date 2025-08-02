@@ -6,7 +6,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 
 from .forms import UploadImageForm
-from .utils import runEfficientNet, runCustomModel, runModel1, runModel2
+from .utils import runEfficientNet, runCustomModel, runModel1, runModel2, runCustomModel1
 from .models import UserClassifications
 
 from PIL import Image
@@ -54,6 +54,10 @@ def classify_image(request):
                 # Run Model 4, and translate result into words
                 confidence, result = runCustomModel(uploaded_file)
                 print("ran model4")
+            
+            elif model_to_run == "model5":
+                confidence, result = runCustomModel1(uploaded_file)
+                print("ran model5")
 
             # Create user history object to store image and result
             image = form.cleaned_data['image']
