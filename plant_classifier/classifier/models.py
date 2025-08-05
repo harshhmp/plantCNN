@@ -9,6 +9,8 @@ class UserClassifications(models.Model):
     result = models.CharField(max_length=100)
     confidence = models.FloatField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    info = models.TextField(default="N/A")
+    model = models.PositiveIntegerField(default=0)
     
     def __str__(self):
         return f"{self.user.userame} - {self.result}"

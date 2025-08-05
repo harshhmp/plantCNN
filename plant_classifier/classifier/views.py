@@ -4,14 +4,16 @@ from django.core.files.base import ContentFile
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
+from django.utils.safestring import mark_safe
 
 from .forms import UploadImageForm
-from .utils import runEfficientNet, runCustomModel, runModel1, runModel2, runCustomModel1
+from .utils import runEfficientNet, runCustomModel, runModel1, runModel2, runCustomModel1, cleanText
 from .models import UserClassifications
 
 from PIL import Image
 import numpy as np
 import tensorflow as tf
+from openai import OpenAI
 
 import os
 
@@ -23,7 +25,7 @@ def classify_image(request):
     result = None
     confidence = None
     image_url = None
-    form = UploadImageForm()
+    form = UploadImageForm()    
     
     if request.method == 'POST':
         form = UploadImageForm(request.POST, request.FILES)
@@ -32,16 +34,19 @@ def classify_image(request):
             uploaded_file = request.FILES['image']
             
             model_to_run = request.POST.get('mode', 'default')
+            model_num = 0
             
             if model_to_run == 'model1':
                 # Run Model 1, and translate result into words
                 confidence, result = runModel1(uploaded_file)
                 print("ran model1")
+                model_num = 1
                 
             elif model_to_run == 'model2':
                 # Run Model 2, and translate result into words
                 confidence, result = runModel2(uploaded_file)
                 print("ran model2")
+                model_num = 2
             
             elif model_to_run == 'model3':
                 # Run Model 3, and translate result into words
@@ -49,23 +54,27 @@ def classify_image(request):
                 result = decoded[0][1]
                 confidence = float(decoded[0][2]) * 100
                 print("ran efficient Model")
+                model_num = 3
             
             elif model_to_run == 'model4':
                 # Run Model 4, and translate result into words
                 confidence, result = runCustomModel(uploaded_file)
                 print("ran model4")
+                model_num = 4
             
             elif model_to_run == "model5":
                 confidence, result = runCustomModel1(uploaded_file)
                 print("ran model5")
+                model_num = 5
 
             # Create user history object to store image and result
             image = form.cleaned_data['image']
             record = UserClassifications.objects.create(
-                user=request.user,
-                image=image,
-                result=result,
-                confidence = confidence
+                user = request.user,
+                image = image,
+                result = result,
+                confidence = confidence,
+                model = model_num
             )
             
             image_url = record.image.url
@@ -109,3 +118,32 @@ def delete_record(request, record_id):
         default_storage.delete(full_path)
         record.delete()
         return redirect('history')
+    
+def info_view(request, record_id):
+    record = get_object_or_404(UserClassifications, id=record_id, user=request.user)
+    
+    if record.info == "N/A":
+        # Generate Info here and change the record
+        key = settings.OPEN_AI_KEY
+        
+        client = OpenAI(api_key=key)
+        
+        prompt = f"Give me some information on {record.result} in under 100 words. Format this using HTML with bootstrap and give me only the container div with no added fluff, start with <div...>"
+        
+        response = client.responses.create(
+            model="gpt-4o-mini",
+            input=prompt,
+            store=True,
+        )
+        
+        clean_response = cleanText(response.output_text)
+        
+        print("Generated: " + clean_response)
+        
+        record.info = mark_safe(clean_response)
+        record.save()
+        
+    print("Retrieved: " + record.info)
+    
+    if request.method == 'POST':
+        return render(request, 'info.html', {'record': record, 'response_text': record.info})

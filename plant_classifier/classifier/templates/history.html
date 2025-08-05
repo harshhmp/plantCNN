@@ -34,6 +34,12 @@
                     Delete
                   </button>
                 </form>
+                <form method="post" action="{% url 'info' record.id %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button class="btn btn-info" type="submit">
+                    More Info
+                  </button>
+                </form>
               </div>
             </div>
           </div>

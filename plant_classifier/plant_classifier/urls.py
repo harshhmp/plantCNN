@@ -33,7 +33,9 @@ urlpatterns = [
     path('signup/', classifier_views.signup_view, name='signup'),
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
+    
     path('delete/<int:record_id>/', classifier_views.delete_record, name='delete'),
+    path('info/<int:record_id>/', classifier_views.info_view, name='info'),
 ]
 
 

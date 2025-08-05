@@ -105,3 +105,19 @@ def convertFileToArray(uploaded_file, size):
     img_array = np.expand_dims(img_array, axis=0)
     
     return img_array
+
+def cleanText(text):
+    # Remove white spaces
+    text = text.strip()
+    
+    if text.startswith("```"):
+        first_newline = text.find('\n')
+        if first_newline != -1:
+            text = text[first_newline+1:]
+        else:
+            text = ""
+            
+    if text.endswith("```"):
+        text = text[:-3]
+
+    return text.strip()
