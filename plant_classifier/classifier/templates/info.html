@@ -23,6 +23,7 @@
                 <div class="card-body">
                 <p><strong>Prediction:</strong> {{ record.result }}</p>
                 <p><strong>Confidence:</strong> {{ record.confidence|floatformat:2 }}%</p>
+                <p><strong>Model:</strong> {{record.getModelName}}</p>
                 <img src="{{ record.image.url }}" alt="Classified image" class="img-fluid rounded mt-3">
                 <br>
                 <em>{{ record.created_at }}</em>
@@ -30,7 +31,14 @@
             </div>
         </div>
         <div class="col-8">
-          {{response_text|safe}}
+          <br>
+          <div class="card shadow" style="max-width: 750px;">
+            <h4 class="container-md bg-secondary border border-secondary-emphasis rounded-3 text-white">About & Cure</h4>
+            <p>{{ about }}</p>
+            <br><br><br>
+            <h5 class="container-md bg-secondary border border-secondary-emphasis rounded-3 text-white">AI Overview</h5>
+            {{response_text|safe}}
+          </div>
         </div>
       </div>
     </div>

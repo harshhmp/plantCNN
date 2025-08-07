@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils.safestring import mark_safe
 
 from .forms import UploadImageForm
-from .utils import runEfficientNet, runCustomModel, runModel1, runModel2, runCustomModel1, cleanText
+from .utils import runEfficientNet, runCustomModel, runModel1, runModel2, runCustomModel1, cleanText, getModelNames
 from .models import UserClassifications
 
 from PIL import Image
@@ -16,6 +16,7 @@ import tensorflow as tf
 from openai import OpenAI
 
 import os
+import json
 
 # Create your views here.
 
@@ -123,7 +124,7 @@ def info_view(request, record_id):
     record = get_object_or_404(UserClassifications, id=record_id, user=request.user)
     
     if record.info == "N/A":
-        # Generate Info here and change the record
+        # Generate Info here and change the record if information doesn't exist
         key = settings.OPEN_AI_KEY
         
         client = OpenAI(api_key=key)
@@ -146,4 +147,14 @@ def info_view(request, record_id):
     print("Retrieved: " + record.info)
     
     if request.method == 'POST':
-        return render(request, 'info.html', {'record': record, 'response_text': record.info})
+        about = ""
+        
+        # If applicable model is used to classify image, get information from json file
+        if record.model == 5 or record.model == 1:
+            with open('../plantData/plant diseases cure/cure.json') as f:
+                data = json.load(f)
+            about = data[record.result.lower()]
+        else:
+            about = "No information for this model, try using Defualt Model or Custom Model ++"
+        
+        return render(request, 'info.html', {'record': record, 'response_text': record.info, 'about': about})

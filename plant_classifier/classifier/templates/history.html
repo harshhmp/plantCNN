@@ -25,6 +25,7 @@
               <div class="card-body">
                 <p><strong>Prediction:</strong> {{ record.result }}</p>
                 <p><strong>Confidence:</strong> {{ record.confidence|floatformat:2 }}%</p>
+                <p><strong>Model:</strong> {{record.getModelName}}</p>
                 <img src="{{ record.image.url }}" alt="Classified image" class="img-fluid rounded mt-3">
                 <br>
                 <em>{{ record.created_at }}</em>
