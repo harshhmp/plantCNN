@@ -147,14 +147,15 @@ def info_view(request, record_id):
     print("Retrieved: " + record.info)
     
     if request.method == 'POST':
-        about = ""
+        about = "No information for this model or classification, try using Defualt Model or Custom Model ++"
         
         # If applicable model is used to classify image, get information from json file
         if record.model == 5 or record.model == 1:
             with open('../plantData/plant diseases cure/cure.json') as f:
                 data = json.load(f)
-            about = data[record.result.lower()]
-        else:
-            about = "No information for this model, try using Defualt Model or Custom Model ++"
-        
+            
+            key = record.result.lower()
+            if key in data: 
+                about = data[record.result.lower()]
+                
         return render(request, 'info.html', {'record': record, 'response_text': record.info, 'about': about})
