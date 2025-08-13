@@ -156,6 +156,6 @@ def info_view(request, record_id):
             
             key = record.result.lower()
             if key in data: 
-                about = data[record.result.lower()]
+                about = data[key]
                 
         return render(request, 'info.html', {'record': record, 'response_text': record.info, 'about': about})
