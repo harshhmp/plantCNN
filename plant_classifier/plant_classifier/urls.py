@@ -36,6 +36,9 @@ urlpatterns = [
     
     path('delete/<int:record_id>/', classifier_views.delete_record, name='delete'),
     path('info/<int:record_id>/', classifier_views.info_view, name='info'),
+    
+    path('share/<int:record_id>/', classifier_views.share_record, name='share'),
+    path('shared/<str:code>/', classifier_views.share_view, name='shareView'),
 ]
 
 

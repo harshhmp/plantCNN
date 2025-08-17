@@ -18,3 +18,7 @@ class UserClassifications(models.Model):
     
     def getModelName(self):
         return getModelNames()[self.model]
+
+class UserShares(models.Model):
+    code = models.CharField(max_length=10)
+    linked_record_id = models.PositiveIntegerField(default=0)

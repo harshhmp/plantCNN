@@ -1,9 +1,15 @@
 import tensorflow as tf
 import numpy as np
+import string
+import secrets
 from tensorflow.keras.applications import EfficientNetB0
 from tensorflow.keras.applications.efficientnet import preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing import image
+from django.conf import settings
+from django.utils.safestring import mark_safe
 from PIL import Image
+from openai import OpenAI
+import json
 
 # Model 1
 model1 = tf.keras.models.load_model("../model1-2.keras")
@@ -19,6 +25,11 @@ modelCustom = tf.keras.models.load_model("../efficientnet_custom_model_1.keras")
 
 # Model 5
 modelCustom1 = tf.keras.models.load_model("../models/efficientnet_custom_model.keras")
+
+def generatePassword(length):
+    characters = string.ascii_letters + string.digits
+    password = ''.join(secrets.choice(characters) for _ in range(length))
+    return password
 
 def getModelNames():
     model_names = ["No Model", "Defualt Model", "Model Plus", "General Classification Model", "Custom Model +", "Custom Model ++"]
@@ -126,3 +137,38 @@ def cleanText(text):
         text = text[:-3]
 
     return text.strip()
+
+def generateInfo(record):
+    # Generates Info here and change the record if information doesn't exist
+    key = settings.OPEN_AI_KEY
+    
+    client = OpenAI(api_key=key)
+    
+    prompt = f"Give me some information on {record.result} in under 100 words. Format this using HTML with bootstrap and give me only the container div with no added fluff, start with <div...>"
+    
+    response = client.responses.create(
+        model="gpt-4o-mini",
+        input=prompt,
+        store=True,
+    )
+    
+    clean_response = cleanText(response.output_text)
+    
+    print("Generated: " + clean_response)
+    
+    record.info = mark_safe(clean_response)
+    record.save()
+
+def getCureInfo(record):
+    about = "No information for this model or classification, try using Defualt Model or Custom Model ++"
+        
+    # If applicable model is used to classify image, get information from json file
+    if record.model == 5 or record.model == 1:
+        with open('../plantData/plant diseases cure/cure.json') as f:
+            data = json.load(f)
+        
+        key = record.result.lower()
+        if key in data: 
+            about = data[key]
+    
+    return about

@@ -7,8 +7,8 @@ from django.contrib.auth.decorators import login_required
 from django.utils.safestring import mark_safe
 
 from .forms import UploadImageForm
-from .utils import runEfficientNet, runCustomModel, runModel1, runModel2, runCustomModel1, cleanText, getModelNames
-from .models import UserClassifications
+from .utils import runEfficientNet, runCustomModel, runModel1, runModel2, runCustomModel1, cleanText, getModelNames, generatePassword, getCureInfo, generateInfo
+from .models import UserClassifications, UserShares
 
 from PIL import Image
 import numpy as np
@@ -120,42 +120,46 @@ def delete_record(request, record_id):
         record.delete()
         return redirect('history')
     
+def share_record(request, record_id):
+    record = get_object_or_404(UserClassifications, id=record_id, user=request.user)
+    full_path = os.path.join(settings.BASE_DIR , record.image.path)
+    
+    if request.method == 'POST':
+        code = generatePassword(10)
+        print(code)
+        share_list.addCode(code, record_id)
+        
+        UserShares.objects.create(
+            code = code,
+            linked_record_id = record_id
+        )
+        
+        return redirect('history')
+
+def share_view(request, code):
+    share_link = get_object_or_404(UserShares, code=code)
+    
+    record_id = share_link.linked_record_id
+    record = get_object_or_404(UserClassifications, id=record_id)
+    
+    if request.method == 'GET':
+        if record.info == "N/A":
+            generateInfo(record)
+        
+        about = getCureInfo(record)
+        
+        return render(request, 'info.html', {'record': record, 'response_text': record.info, 'about': about})
+            
 def info_view(request, record_id):
     record = get_object_or_404(UserClassifications, id=record_id, user=request.user)
     
     if record.info == "N/A":
         # Generate Info here and change the record if information doesn't exist
-        key = settings.OPEN_AI_KEY
-        
-        client = OpenAI(api_key=key)
-        
-        prompt = f"Give me some information on {record.result} in under 100 words. Format this using HTML with bootstrap and give me only the container div with no added fluff, start with <div...>"
-        
-        response = client.responses.create(
-            model="gpt-4o-mini",
-            input=prompt,
-            store=True,
-        )
-        
-        clean_response = cleanText(response.output_text)
-        
-        print("Generated: " + clean_response)
-        
-        record.info = mark_safe(clean_response)
-        record.save()
+        generateInfo(record)
         
     print("Retrieved: " + record.info)
     
     if request.method == 'POST':
-        about = "No information for this model or classification, try using Defualt Model or Custom Model ++"
+        about = getCureInfo(record)
         
-        # If applicable model is used to classify image, get information from json file
-        if record.model == 5 or record.model == 1:
-            with open('../plantData/plant diseases cure/cure.json') as f:
-                data = json.load(f)
-            
-            key = record.result.lower()
-            if key in data: 
-                about = data[key]
-                
         return render(request, 'info.html', {'record': record, 'response_text': record.info, 'about': about})
