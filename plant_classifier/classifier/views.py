@@ -3,6 +3,7 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.utils.safestring import mark_safe
 
@@ -124,17 +125,22 @@ def share_record(request, record_id):
     record = get_object_or_404(UserClassifications, id=record_id, user=request.user)
     full_path = os.path.join(settings.BASE_DIR , record.image.path)
     
-    if request.method == 'POST':
-        code = generatePassword(10)
-        print(code)
-        share_list.addCode(code, record_id)
+    code = None
+    
+    if request.method == 'GET':
+        found = UserShares.objects.filter(linked_record_id=record_id).exists()
         
-        UserShares.objects.create(
-            code = code,
-            linked_record_id = record_id
-        )
+        if found:
+            code = get_object_or_404(UserShares, linked_record_id=record_id).code
+        else:
+            code = generatePassword(10)
+
+            UserShares.objects.create(
+                code = code,
+                linked_record_id = record_id
+            )
         
-        return redirect('history')
+    return JsonResponse({"code": code})
 
 def share_view(request, code):
     share_link = get_object_or_404(UserShares, code=code)

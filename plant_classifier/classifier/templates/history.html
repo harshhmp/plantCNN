@@ -42,12 +42,9 @@
                     More Info
                   </button>
                 </form>
-                <form method="post" action="{% url 'share' record.id %}" style="display:inline;">
-                  {% csrf_token %}
-                  <button class="btn btn-info" type="submit">
+                  <button class="btn btn-info" onclick="getCode('{{ record.id }}')" type="button">
                     Share
                   </button>
-                </form>
               </div>
             </div>
           </div>
@@ -61,6 +58,17 @@
     </div>
 
   </div>
+
+  <script>
+    async function getCode(id) {
+        let response = await fetch('/share/' + id);
+        let data = await response.json();
+
+        let code = data.code;
+
+        alert("Your code is: " + code);
+    }
+</script>
   
 </body>
 
